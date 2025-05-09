@@ -2,6 +2,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { useCart, CartProduct } from '@/contexts/CartContext';
+import { formatCurrency, ensurePriceInINR } from '@/utils/currencyFormatter';
+import { useWishlist } from '@/contexts/WishlistContext';
+import { Heart, IndianRupee } from 'lucide-react';
 
 interface ProductProps {
   id: string;
@@ -43,8 +47,27 @@ const products: ProductProps[] = [
 ];
 
 const ProductCard: React.FC<{ product: ProductProps }> = ({ product }) => {
+  const { addToCart } = useCart();
+  const { toggleWishlist, isInWishlist } = useWishlist();
+  const inWishlist = isInWishlist(product.id);
+
+  const handleAddToCart = () => {
+    const cartProduct: CartProduct = {
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      quantity: 1,
+      image: product.image
+    };
+    addToCart(cartProduct);
+  };
+
+  // Ensure price is in INR
+  const priceInINR = ensurePriceInINR(product.price);
+  const formattedPrice = formatCurrency(priceInINR);
+
   return (
-    <div className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+    <div className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow relative">
       <div className="h-64 overflow-hidden">
         <Link to={`/products/${product.category}/${product.id}`}>
           <img
@@ -54,18 +77,27 @@ const ProductCard: React.FC<{ product: ProductProps }> = ({ product }) => {
           />
         </Link>
       </div>
+      <button 
+        className={`absolute top-3 right-3 p-2 rounded-full ${inWishlist ? 'bg-red-100' : 'bg-white'}`} 
+        onClick={() => toggleWishlist(product)}
+      >
+        <Heart className={`h-5 w-5 ${inWishlist ? 'fill-red-500 text-red-500' : 'text-gray-500'}`} />
+      </button>
       <div className="p-4">
         <Link to={`/products/${product.category}/${product.id}`}>
           <h3 className="font-semibold text-lg mb-1 hover:text-primary transition-colors">
             {product.name}
           </h3>
         </Link>
-        <p className="text-gray-700 mb-2">${product.price.toFixed(2)}</p>
+        <p className="text-gray-700 mb-2 flex items-center">
+          <IndianRupee className="h-4 w-4 mr-1" />
+          {formattedPrice}
+        </p>
         <div className="flex justify-between items-center pt-2">
           <Link to={`/custom-designer?product=${product.id}`}>
             <Button variant="outline" size="sm">Customize</Button>
           </Link>
-          <Button variant="default" size="sm">Add to Cart</Button>
+          <Button variant="default" size="sm" onClick={handleAddToCart}>Add to Cart</Button>
         </div>
       </div>
     </div>

@@ -1,31 +1,66 @@
 
-import React from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowUp, ArrowDown, ShoppingBag, Package, User } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ArrowUp, ArrowDown, ShoppingBag, Package, User, Users, Heart, IndianRupee } from 'lucide-react';
+import { getProducts } from '@/services/productService';
+import { getOrders } from '@/services/orderService';
+import { getUsers } from '@/services/authService';
+import { formatCurrency } from '@/utils/currencyFormatter';
 
 const AdminDashboard: React.FC = () => {
-  // This would normally come from your API
-  const stats = {
-    revenue: 12450,
-    orders: 42,
-    products: 24,
-    customers: 156
-  };
+  const [stats, setStats] = useState({
+    revenue: 0,
+    orders: 0,
+    products: 0,
+    customers: 0,
+    activeUsers: 0,
+    favorites: 10
+  });
+
+  useEffect(() => {
+    // Load data when component mounts
+    const loadData = () => {
+      try {
+        const orders = getOrders();
+        const products = getProducts();
+        const users = getUsers();
+        
+        // Calculate total revenue from orders
+        const revenue = orders.reduce((total, order) => total + order.total, 0);
+        
+        // For demonstration purposes, we'll simulate active users and favorites counts
+        const activeUsers = Math.floor(users.length * 0.7); // 70% of users are "active"
+        
+        setStats({
+          revenue,
+          orders: orders.length,
+          products: products.length,
+          customers: users.filter(user => !user.isAdmin).length,
+          activeUsers,
+          favorites: orders.reduce((total, order) => total + (order.items ? order.items.length : 0), 0)
+        });
+      } catch (error) {
+        console.error("Failed to load dashboard data:", error);
+      }
+    };
+    
+    loadData();
+  }, []);
 
   return (
-    <div className="space-y-8">
-      <h2 className="text-2xl font-semibold">Overview</h2>
+    <div className="space-y-6">
+      <h2 className="text-2xl font-semibold">Dashboard Overview</h2>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <Card className="bg-white">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-              <span className="text-primary">$</span>
+            <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+              <IndianRupee className="h-4 w-4 text-blue-600" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${stats.revenue.toLocaleString()}</div>
+            <div className="text-2xl font-bold">{formatCurrency(stats.revenue)}</div>
             <p className="text-xs text-muted-foreground flex items-center space-x-1">
               <span className="text-green-500 flex items-center">
                 <ArrowUp className="h-3 w-3 mr-1" />18.2%
@@ -35,11 +70,11 @@ const AdminDashboard: React.FC = () => {
           </CardContent>
         </Card>
         
-        <Card>
+        <Card className="bg-white">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Orders</CardTitle>
-            <div className="h-8 w-8 rounded-full bg-secondary/10 flex items-center justify-center">
-              <ShoppingBag className="h-4 w-4 text-secondary" />
+            <div className="h-8 w-8 rounded-full bg-cyan-100 flex items-center justify-center">
+              <ShoppingBag className="h-4 w-4 text-cyan-600" />
             </div>
           </CardHeader>
           <CardContent>
@@ -53,11 +88,11 @@ const AdminDashboard: React.FC = () => {
           </CardContent>
         </Card>
         
-        <Card>
+        <Card className="bg-white">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Products</CardTitle>
-            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-              <Package className="h-4 w-4 text-primary" />
+            <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center">
+              <Package className="h-4 w-4 text-indigo-600" />
             </div>
           </CardHeader>
           <CardContent>
@@ -71,11 +106,11 @@ const AdminDashboard: React.FC = () => {
           </CardContent>
         </Card>
         
-        <Card>
+        <Card className="bg-white">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Customers</CardTitle>
-            <div className="h-8 w-8 rounded-full bg-secondary/10 flex items-center justify-center">
-              <User className="h-4 w-4 text-secondary" />
+            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+            <div className="h-8 w-8 rounded-full bg-teal-100 flex items-center justify-center">
+              <Users className="h-4 w-4 text-teal-600" />
             </div>
           </CardHeader>
           <CardContent>
@@ -88,65 +123,65 @@ const AdminDashboard: React.FC = () => {
             </p>
           </CardContent>
         </Card>
-      </div>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Card className="col-span-1">
-          <CardHeader>
-            <CardTitle>Recent Orders</CardTitle>
-            <CardDescription>Latest 5 orders</CardDescription>
+        
+        <Card className="bg-white">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Active Users</CardTitle>
+            <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
+              <User className="h-4 w-4 text-green-600" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {[1, 2, 3, 4, 5].map((order) => (
-                <div key={order} className="flex items-center justify-between border-b pb-2">
-                  <div>
-                    <p className="font-medium">Order #{1000 + order}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {new Date(2023, 5, order).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="bg-green-100 text-green-800 text-xs px-2.5 py-0.5 rounded">
-                      Completed
-                    </span>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-medium">${(Math.random() * 200 + 50).toFixed(2)}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <div className="text-2xl font-bold">{stats.activeUsers}</div>
+            <p className="text-xs text-muted-foreground flex items-center space-x-1">
+              <span className="text-green-500 flex items-center">
+                <ArrowUp className="h-3 w-3 mr-1" />5.7%
+              </span>
+              <span>from last month</span>
+            </p>
           </CardContent>
-          <CardFooter>
-            <button className="text-primary text-sm hover:underline">View all orders</button>
-          </CardFooter>
         </Card>
         
-        <Card className="col-span-1">
+        <Card className="bg-white">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Favorites</CardTitle>
+            <div className="h-8 w-8 rounded-full bg-red-100 flex items-center justify-center">
+              <Heart className="h-4 w-4 text-red-500" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.favorites}</div>
+            <p className="text-xs text-muted-foreground flex items-center space-x-1">
+              <span className="text-green-500 flex items-center">
+                <ArrowUp className="h-3 w-3 mr-1" />14.3%
+              </span>
+              <span>from last month</span>
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-1 gap-4">
+        <Card className="bg-white">
           <CardHeader>
             <CardTitle>Popular Products</CardTitle>
-            <CardDescription>Top selling items</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {["Custom T-Shirt", "Hoodie", "Cap", "Long Sleeve Shirt", "Sweatshirt"].map((product, idx) => (
-                <div key={idx} className="flex items-center justify-between border-b pb-2">
+              {getProducts().slice(0, 5).map((product) => (
+                <div key={product.id} className="flex items-center justify-between border-b pb-2">
                   <div className="flex items-center">
                     <div className="w-10 h-10 rounded bg-gray-200 mr-3"></div>
-                    <p className="font-medium">{product}</p>
+                    <p className="font-medium">{product.name}</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-medium">${(Math.random() * 40 + 10).toFixed(2)}</p>
-                    <p className="text-xs text-muted-foreground">{Math.floor(Math.random() * 100)} sold</p>
+                    <p className="font-medium">{formatCurrency(product.price)}</p>
+                    <p className="text-xs text-muted-foreground">{Math.floor(Math.random() * 100)} views</p>
                   </div>
                 </div>
               ))}
             </div>
           </CardContent>
-          <CardFooter>
-            <button className="text-primary text-sm hover:underline">View all products</button>
-          </CardFooter>
         </Card>
       </div>
     </div>
