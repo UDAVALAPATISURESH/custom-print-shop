@@ -27,6 +27,7 @@ import { CartProvider } from "./contexts/CartContext";
 import { WishlistProvider } from "./contexts/WishlistContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

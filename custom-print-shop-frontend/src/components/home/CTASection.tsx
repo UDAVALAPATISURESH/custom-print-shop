@@ -3,8 +3,11 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 
+
 const CTASection: React.FC = () => {
   return (
+    <>
+   
     <section className="py-16 bg-primary text-white">
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto text-center">
@@ -27,6 +30,8 @@ const CTASection: React.FC = () => {
         </div>
       </div>
     </section>
+
+     </>
   );
 };
 
